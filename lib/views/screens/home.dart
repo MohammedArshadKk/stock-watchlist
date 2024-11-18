@@ -7,6 +7,7 @@ import 'package:stock/model/company_model.dart';
 import 'package:stock/riverpod/search.dart';
 import 'package:stock/services/api_services.dart';
 import 'package:stock/services/database_services.dart';
+import 'package:stock/views/widgets/alert.dart';
 
 class Home extends ConsumerStatefulWidget {
   const Home({super.key});
@@ -24,7 +25,7 @@ class _HomeState extends ConsumerState<Home> {
 
   void _onSearchChanged(String query) {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
-    _debounce = Timer(const Duration(seconds: 5), () {
+    _debounce = Timer(const Duration(seconds: 1), () {
       setState(() {
         _searchText = query.trim();
       });
@@ -81,24 +82,26 @@ class _HomeState extends ConsumerState<Home> {
                           subtitle: Text(company.symbol),
                           trailing: IconButton(
                               onPressed: () async {
-                                final String price =
-                                    await apiServices.getPrice(company.symbol);
-                                if (price.isNotEmpty) {
-                                  List<String> prices = price.split('&');
-                                  String close = prices[0];
-                                  String open = prices[1];
-                                  log(close);
-                                  log(open);
-                                  final selectedCompany = Company(
-                                      symbol: company.symbol,
-                                      name: company.name,
-                                      region: company.region,
-                                      open: open,
-                                      close: close);
-                                  databaseServices.addData(selectedCompany);
-                                } else {
-                                  log('price is null');
-                                }
+                                await showAlertDialog(context, () async {
+                                  final String price = await apiServices
+                                      .getPrice(company.symbol);
+                                  if (price.isNotEmpty) {
+                                    List<String> prices = price.split('&');
+                                    String close = prices[0];
+                                    String open = prices[1];
+                                    log(close);
+                                    log(open);
+                                    final selectedCompany = Company(
+                                        symbol: company.symbol,
+                                        name: company.name,
+                                        region: company.region,
+                                        open: open,
+                                        close: close);
+                                    databaseServices.addData(selectedCompany);
+                                  } else {
+                                    log('price is null');
+                                  }
+                                }, 'add to Watchlist');
                               },
                               icon: const Icon(Icons.add)),
                         );

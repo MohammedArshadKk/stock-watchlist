@@ -3,9 +3,10 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:stock/services/database_services.dart';
 import 'package:stock/model/company_model.dart';
+import 'package:stock/views/widgets/alert.dart';
 
 class Watchlist extends StatefulWidget {
-  Watchlist({super.key});
+const  Watchlist({super.key});
 
   @override
   State<Watchlist> createState() => _WatchlistState();
@@ -38,9 +39,11 @@ class _WatchlistState extends State<Watchlist> {
                 final company = watchlist[index];
                 log(company.id.toString());
                 return ListTile(
-                  onLongPress: () {
-                    databaseServices.delete(company.id!);
-                    setState(() {});
+                  onLongPress: () async {
+                    showAlertDialog(context, () async {
+                      await databaseServices.delete(company.id!);
+                      setState(() {});
+                    }, '');
                   },
                   leading: CircleAvatar(
                     radius: 30,
